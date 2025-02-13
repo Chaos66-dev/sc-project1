@@ -26,3 +26,21 @@ body, html {
     height: 50%;
 }
 
+.menu-header-text {
+    padding-left: 3%;
+    padding-top: 3%;
+    margin: 0;
+}
+
+.menu-text {
+    padding-left: 3%;
+    margin: 0;
+}
+
+.randomized-selector {
+    padding-bottom: 5%;
+}
+
+#battlePropertiesSubmit {
+    margin-left: 3%;
+}

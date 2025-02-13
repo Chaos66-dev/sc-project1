@@ -8,6 +8,7 @@
         <link rel="stylesheet" href="styles/style.css">
         <link rel="stylesheet" href="styles/header.css">
         <link rel="stylesheet" href="styles/fonts.css">
+        <script src="scripts/index.js" defer></script>
     </head>
 
     <body>
@@ -26,12 +27,21 @@
                  <div class="menu">
                     <h3 class="menu-header-text">Battle Properties</h3>
                     <div class="menu-text">
-                        <h5>Ally Pokemon <span>*num here*</span></h5>
-                        <h5>CPU Pokemon <span>*num here*</span></h5>
+                        <h5>Ally Pokemon <input type="number" id="allyPokemonNum" name="allyPokemonNum" min="1" max="6" required></h5>
+                        <h5>CPU Pokemon <input type="number" id="cpuPokemonNum" name="cpuPokemonNum" min="1" max="6" required></h5>
                     </div>
                     <div class="randomized-selector">
+                        <label>
+                            <input type="radio" name="teamChoice" value="randomized" id="randomized" checked>
+                            Randomized
+                        </label>
 
+                        <label>
+                            <input type="radio" name="teamChoice" value="pick-team" id="pickTeam">
+                            Pick Team
+                        </label>
                     </div>
+                    <button id="battlePropertiesSubmit">Start Battle</button>
                  </div>
             </div>
         </div>
