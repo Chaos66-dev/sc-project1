@@ -22,9 +22,9 @@ document.getElementById('nav-item-repo').addEventListener('click', function() {
 })
 
 // Creates instance of pokemon class and selects moves
-function createPokemon(data) {
+async function createPokemon(data) {
     let poke = new Pokemon(data)
-    poke.selectMoves()
+    await poke.selectMoves()
     return poke
 }
 
@@ -36,7 +36,7 @@ async function requestPokemon(party, pokemonName = '') {
         let randPokeId = Math.floor(Math.random() * 649) + 1
         const response = await fetch(baseURL + "/" + randPokeId.toString())
         const data = await response.json()
-        party.push(createPokemon(data))
+        party.push(await createPokemon(data))
     }
     else {
         // request pokemon with pokemonName
@@ -72,6 +72,45 @@ function renderCPU(){
     document.getElementById("cpu-hp-value").innerText = cpuPokemon[0].hp
 }
 
+function renderMoves() {
+    const move1 = document.getElementsByClassName('move1')[0]
+    let move1_name = move1.children[0]
+    let move1_type = move1.children[1].children[0]
+    let move1_pp = move1.children[1].children[1]
+
+    move1_name.innerText = allyPokemon[0].moves[0].name
+    move1_type.innerText = allyPokemon[0].moves[0].type
+    move1_pp.innerText = allyPokemon[0].moves[0].pp
+
+    const move2 = document.getElementsByClassName('move2')[0]
+    let move2_name = move2.children[0]
+    let move2_type = move2.children[1].children[0]
+    let move2_pp = move2.children[1].children[1]
+
+    move2_name.innerText = allyPokemon[0].moves[1].name
+    move2_type.innerText = allyPokemon[0].moves[1].type
+    move2_pp.innerText = allyPokemon[0].moves[1].pp
+
+    const move3 = document.getElementsByClassName('move3')[0]
+    let move3_name = move3.children[0]
+    let move3_type = move3.children[1].children[0]
+    let move3_pp = move3.children[1].children[1]
+
+    move3_name.innerText = allyPokemon[0].moves[2].name
+    move3_type.innerText = allyPokemon[0].moves[2].type
+    move3_pp.innerText = allyPokemon[0].moves[2].pp
+
+    const move4 = document.getElementsByClassName('move4')[0]
+    let move4_name = move4.children[0]
+    let move4_type = move4.children[1].children[0]
+    let move4_pp = move4.children[1].children[1]
+
+    move4_name.innerText = allyPokemon[0].moves[3].name
+    move4_type.innerText = allyPokemon[0].moves[3].type
+    move4_pp.innerText = allyPokemon[0].moves[3].pp
+}
+
 await initTeams()
 renderAlly()
 renderCPU()
+renderMoves()
