@@ -9,7 +9,7 @@
 .title {
     grid-column: 1;
     /* background-color: aqua; */
-    opacity: 50%;
+    opacity: 75%;
     display: flex;
     padding-left: 3%;
 }

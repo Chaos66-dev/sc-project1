@@ -23,6 +23,33 @@ body, html {
     grid-row: 1;
     background-color: red;
     opacity: 50%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+}
+
+.allyPokemonSprite {
+    grid-row: 2;
+    grid-column: 1;
+    background-color: orange;
+}
+
+.allyPokemonBattleBar {
+    grid-row: 2;
+    grid-column: 2;
+    background-color: yellow;
+}
+
+.cpuPokemonSprite {
+    grid-row: 1;
+    grid-column: 2;
+    background-color: crimson;
+}
+
+.cpuPokemonBattleBar {
+    grid-row: 1;
+    grid-column: 1;
+    background-color: brown;
 }
 
 .battle-menu {

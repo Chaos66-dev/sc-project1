@@ -24,6 +24,7 @@ body, html {
     background-color: yellowgreen;
     width: 50%;
     height: 50%;
+    border-radius: 5%;
 }
 
 .menu-header-text {
