@@ -15,3 +15,7 @@ document.getElementById("battlePropertiesSubmit").addEventListener("click", func
     // Redirect to a new page
     window.location.href = "battle.html"; // Change to your destination page
 });
+
+document.getElementById('nav-item-repo').addEventListener('click', function() {
+    window.location.href = "https://github.com/Chaos66-dev/sc-project1"
+})

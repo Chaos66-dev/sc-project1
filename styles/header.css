@@ -29,3 +29,11 @@
     align-items: center;
     padding-left: 30%;
 }
+
+#nav-item-home {
+    cursor: pointer;
+}
+
+#nav-item-repo {
+    cursor: pointer;
+}

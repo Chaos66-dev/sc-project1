@@ -10,12 +10,25 @@ console.log(allyNum, cpuNum, teamChoice)
 let allyPokemon = []
 let cpuPokemon = []
 
+// add event handler to redirect to home page on click
+let home = document.getElementById('nav-item-home')
+home.addEventListener('click', function() {
+    window.location.href = "index.html";
+});
+
+// add event handler to redirect repo page on click
+document.getElementById('nav-item-repo').addEventListener('click', function() {
+    window.location.href = "https://github.com/Chaos66-dev/sc-project1"
+})
+
+// Creates instance of pokemon class and selects moves
 function createPokemon(data) {
     let poke = new Pokemon(data)
     poke.selectMoves()
     return poke
 }
 
+// calls pokemon api and adds the pokemon to party
 async function requestPokemon(party, pokemonName = '') {
     if (pokemonName == '') {
         // request random pokemon
