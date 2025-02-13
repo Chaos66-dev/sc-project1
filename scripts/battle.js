@@ -12,7 +12,7 @@ let cpuPokemon = []
 
 function createPokemon(data) {
     let poke = new Pokemon(data)
-    console.log(poke.toString())
+    poke.selectMoves()
     return poke
 }
 
@@ -47,4 +47,18 @@ async function initTeams(){
     console.log(cpuPokemon)
 }
 
-initTeams()
+function renderAlly(){
+    document.getElementById("allyBattleSprite").src = allyPokemon[0].back_default_sprite
+    document.getElementById("ally-pokemon-name").innerText = allyPokemon[0].name
+    document.getElementById("ally-hp-value").innerText = allyPokemon[0].hp
+}
+
+function renderCPU(){
+    document.getElementById("cpuBattleSprite").src = cpuPokemon[0].front_default_sprite
+    document.getElementById("cpu-pokemon-name").innerText = cpuPokemon[0].name
+    document.getElementById("cpu-hp-value").innerText = cpuPokemon[0].hp
+}
+
+await initTeams()
+renderAlly()
+renderCPU()

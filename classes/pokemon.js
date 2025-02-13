@@ -1,3 +1,5 @@
+import Move from '../classes/move.js'
+
 class Pokemon {
     constructor(info) {
         this.name = info.name;
@@ -40,6 +42,24 @@ class Pokemon {
                 BACK SPRITE: ${this.back_default_sprite}
                 POSSIBLE MOVES: ${this.possible_moves}
                 MOVES: ${this.moves}`
+    }
+
+    async selectMoves() {
+        let selected_idxs = []
+        let selected_moves = []
+        while (selected_moves.length < 4){
+            let rand_mv = Math.floor(Math.random() * this.possible_moves.length)
+            if (selected_idxs.includes(rand_mv)) {
+                continue
+            }
+            else {
+                selected_idxs.push(rand_mv);
+                let response = await fetch(this.possible_moves[rand_mv].url);
+                let data = await response.json()
+                selected_moves.push(new Move(data))
+            }
+        }
+        this.moves = selected_moves
     }
 }
 
