@@ -8,6 +8,7 @@ document.getElementById("battlePropertiesSubmit").addEventListener("click", func
     let teamChoice = selectedRadio ? selectedRadio.value : "None";
 
     // Store values in localStorage (or use URL parameters)
+    localStorage.clear()
     localStorage.setItem("allyNum", allyNum);
     localStorage.setItem("cpuNum", cpuNum);
     localStorage.setItem("teamChoice", teamChoice);

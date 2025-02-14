@@ -5,10 +5,10 @@ let baseURL = 'https://pokeapi.co/api/v2/pokemon'
 let allyNum = localStorage.getItem("allyNum");
 let cpuNum = localStorage.getItem("cpuNum");
 let teamChoice = localStorage.getItem("teamChoice");
-console.log(allyNum, cpuNum, teamChoice)
 
 let allyPokemon = []
 let cpuPokemon = []
+let userMoveSelection = -1
 
 // add event handler to redirect to home page on click
 let home = document.getElementById('nav-item-home')
@@ -60,16 +60,24 @@ async function initTeams(){
     console.log(cpuPokemon)
 }
 
+function renderAllyHp() {
+    document.getElementById("ally-hp-value").innerText = allyPokemon[0].hp
+}
+
 function renderAlly(){
     document.getElementById("allyBattleSprite").src = allyPokemon[0].back_default_sprite
     document.getElementById("ally-pokemon-name").innerText = allyPokemon[0].name
-    document.getElementById("ally-hp-value").innerText = allyPokemon[0].hp
+    renderAllyHp()
+}
+
+function renderCPUHp() {
+    document.getElementById("cpu-hp-value").innerText = cpuPokemon[0].hp
 }
 
 function renderCPU(){
     document.getElementById("cpuBattleSprite").src = cpuPokemon[0].front_default_sprite
     document.getElementById("cpu-pokemon-name").innerText = cpuPokemon[0].name
-    document.getElementById("cpu-hp-value").innerText = cpuPokemon[0].hp
+    renderCPUHp()
 }
 
 function renderMoves() {
@@ -110,7 +118,134 @@ function renderMoves() {
     move4_pp.innerText = allyPokemon[0].moves[3].pp
 }
 
+function battleOver() {
+    if (allyPokemon.length == 0 || cpuPokemon.length == 0){
+        return true
+    }
+    return false
+}
+
+function getCPUMove() {
+    let moveChoice = Math.floor(Math.random() * 4)
+    moveChoice = cpuPokemon[0].moves[moveChoice]
+    return moveChoice
+}
+
+function userMoveInput(event, resolve){
+    if (event.currentTarget == document.getElementsByClassName('move1')[0]) {
+        userMoveSelection = 0
+    }
+    else if (event.currentTarget == document.getElementsByClassName('move2')[0]) {
+        userMoveSelection = 1
+    }
+    else if (event.currentTarget == document.getElementsByClassName('move3')[0]) {
+        userMoveSelection = 2
+    }
+    else if (event.currentTarget == document.getElementsByClassName('move4')[0]) {
+        userMoveSelection = 3
+    }
+    resolve(userMoveSelection)
+}
+
+async function getUserMove(){
+    return new Promise((resolve) => {
+        document.getElementsByClassName('move1')[0].addEventListener('click', (event) => userMoveInput(event, resolve));
+        document.getElementsByClassName('move2')[0].addEventListener('click', (event) => userMoveInput(event, resolve));
+        document.getElementsByClassName('move3')[0].addEventListener('click', (event) => userMoveInput(event, resolve));
+        document.getElementsByClassName('move4')[0].addEventListener('click', (event) => userMoveInput(event, resolve));
+    })
+}
+
+function decidePriority(userMove, cpuMove) {
+    if (userMove.priority > cpuMove.priority) {
+        return 'user'
+    }
+    else if (userMove.priority < cpuMove.priority) {
+        return 'cpu'
+    }
+    else {
+        return allyPokemon[0].speed >= cpuPokemon[0].speed ? 'user' : 'cpu' // user always wins speed ties
+    }
+}
+
+function executeMove(move, attackingMon, defendingMon) {
+    // TODO make ui say what move the user is using
+    alert(`${attackingMon.name} used ${move.name}`)
+    let base_power = move.power
+    if (move.damage_class == 'special') {
+        base_power *= (attackingMon.sp_atk / defendingMon.sp_def)
+    }
+    else if (move.damage_class == 'physical') {
+        base_power *= (attackingMon.atk / defendingMon.sp_def)
+    }
+
+    // TODO implement stab
+    // TODO implement status conditions
+
+    if (Math.random() > move.accuracy/100 && move.damage_class != 'status') {
+        alert(`${attackingMon.name}'s attack missed!`)
+        return
+    }
+
+    let damage = Math.round(base_power/3)
+    defendingMon.hp -= damage
+    alert(`${attackingMon.name}'s attack did ${damage} damage`)
+}
+
+
 await initTeams()
 renderAlly()
 renderCPU()
 renderMoves()
+
+while(!battleOver()){
+
+    // get both moves to be used in next turn
+    let cpuMove = getCPUMove()
+    console.log(cpuMove)
+    let userMove = await getUserMove()
+    userMove = allyPokemon[0].moves[userMove]
+    console.log(userMove)
+
+    // decide priority
+    let moveFirst = decidePriority(userMove, cpuMove)
+    // execute first move
+    if (moveFirst == 'user') {
+        executeMove(userMove, allyPokemon[0], cpuPokemon[0])
+        if (cpuPokemon[0].hp <= 0) {
+            console.log('fainted')
+            // TODO handle faint
+        }
+        else {
+            renderCPUHp()
+        }
+        executeMove(cpuMove, cpuPokemon[0], allyPokemon[0])
+        if (allyPokemon[0].hp <= 0) {
+            console.log('fainted')
+            // TODO handle faint
+        }
+        else {
+            renderAllyHp()
+        }
+    }
+    else {
+        executeMove(cpuMove, cpuPokemon[0], allyPokemon[0])
+        if (allyPokemon[0].hp <= 0) {
+            console.log('fainted')
+            // TODO handle faint
+        }
+        else {
+            renderAllyHp()
+        }
+        executeMove(userMove, allyPokemon[0], cpuPokemon[0])
+        if (cpuPokemon[0].hp <= 0) {
+            console.log('fainted')
+            // TODO handle faint
+        }
+        else {
+            renderCPUHp()
+        }
+    }
+
+    break
+}
