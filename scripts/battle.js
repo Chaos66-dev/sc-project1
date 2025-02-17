@@ -92,10 +92,11 @@ function rerenderMove(move_num) {
     let move_name = move.children[0]
     let move_type = move.children[1].children[0]
     let move_pp = move.children[1].children[1]
+    let mon_available_pp = Math.max(allyPokemon[0].moves[move_num].pp, 0)
 
     move_name.innerText = allyPokemon[0].moves[move_num].name
     move_type.innerText = allyPokemon[0].moves[move_num].type
-    move_pp.innerText = `${allyPokemon[0].moves[move_num].pp} / ${allyPokemon[0].moves[move_num].max_pp}`
+    move_pp.innerText = `${mon_available_pp} / ${allyPokemon[0].moves[move_num].max_pp}`
 }
 
 function battleOver() {
@@ -114,21 +115,16 @@ function getCPUMove() {
 function userMoveInput(event, resolve){
     if (event.currentTarget == document.getElementsByClassName('move0')[0]) {
         userMoveSelection = 0
-        allyPokemon[0].moves[0].pp--
     }
     else if (event.currentTarget == document.getElementsByClassName('move1')[0]) {
         userMoveSelection = 1
-        allyPokemon[0].moves[1].pp--
     }
     else if (event.currentTarget == document.getElementsByClassName('move2')[0]) {
         userMoveSelection = 2
-        allyPokemon[0].moves[2].pp--
     }
     else if (event.currentTarget == document.getElementsByClassName('move3')[0]) {
         userMoveSelection = 3
-        allyPokemon[0].moves[3].pp--
     }
-    rerenderMove(userMoveSelection)
     resolve(userMoveSelection)
 }
 
@@ -172,11 +168,45 @@ function executeMove(move, attackingMon, defendingMon) {
         return
     }
 
-    let damage = Math.round(base_power/3)
+    // let damage = Math.round(base_power/3)
+    let damage = Math.round(base_power*2)
     defendingMon.hp -= damage
     alert(`${attackingMon.name}'s attack did ${damage} damage`)
 }
 
+function hasAnyPP(mon){
+    for(let move of mon.moves){
+        if (move.pp > 0){
+            return true
+        }
+    }
+    return false
+}
+
+
+function decreaseMovePP(mon, move, ally){
+    for(let i = 0; i < 4; i++){
+        if(mon.moves[i] == move){
+            move.pp--
+            if(ally) {
+                rerenderMove(i)
+            }
+            return
+        }
+    }
+}
+
+function cpuFaint(){
+    cpuPokemon[0].hp = 0
+    renderCPUHp()
+    alert(`${cpuPokemon[0].name} fainted`)
+    cpuPokemon.shift()
+}
+
+function cpuNewPokemon() {
+    alert(`CPU sends out ${cpuPokemon[0].name}`)
+    renderCPU()
+}
 
 await initTeams()
 renderAlly()
@@ -186,11 +216,38 @@ renderMoves()
 while(!battleOver()){
 
     // get both moves to be used in next turn
-    let cpuMove = getCPUMove()
-    console.log(cpuMove)
-    let userMove = await getUserMove()
-    userMove = allyPokemon[0].moves[userMove]
-    console.log(userMove)
+    var cpuMove = ''
+    if(hasAnyPP(cpuPokemon[0])){
+        cpuMove = getCPUMove()
+        console.log(cpuMove)
+    }
+    else {
+        console.log('cpu pokemon is out of all move pp')
+        // TODO handle this case
+    }
+
+    // check to see if at least one move has pp, else handle
+    var userMove = ''
+    if(hasAnyPP(allyPokemon[0])){
+        userMove = await getUserMove()
+        let tmp = allyPokemon[0].moves[userMove].pp
+        while (tmp <= 0) {
+            alert('This move has no more pp. please choose another move.')
+            userMove = await getUserMove()
+            // TODO has an issue where this only detects once
+            tmp = allyPokemon[0].moves[userMove].pp
+        }
+        userMove = allyPokemon[0].moves[userMove]
+        console.log(userMove)
+    }
+    else {
+        console.log('all moves are out of pp')
+        // TODO handle this case
+    }
+
+    // decrease move pp
+    decreaseMovePP(allyPokemon[0], userMove, true)
+    decreaseMovePP(cpuPokemon[0], cpuMove, false)
 
     // decide priority
     let moveFirst = decidePriority(userMove, cpuMove)
@@ -198,22 +255,21 @@ while(!battleOver()){
     if (moveFirst == 'user') {
         executeMove(userMove, allyPokemon[0], cpuPokemon[0])
         if (cpuPokemon[0].hp <= 0) {
-            console.log('fainted')
-            // TODO handle faint
-            // set heath to zero, render health
-            // allow user to switch pokemon if available, skip execution of cpu move
-            // if not available, pop pokemon and handle end of game
+            cpuFaint()
+            if(cpuPokemon.length > 0){
+                cpuNewPokemon()
+            }
         }
         else {
             renderCPUHp()
-        }
-        executeMove(cpuMove, cpuPokemon[0], allyPokemon[0])
-        if (allyPokemon[0].hp <= 0) {
-            console.log('fainted')
-            // TODO handle faint
-        }
-        else {
-            renderAllyHp()
+            executeMove(cpuMove, cpuPokemon[0], allyPokemon[0])
+            if (allyPokemon[0].hp <= 0) {
+                console.log('fainted')
+                // TODO handle faint
+            }
+            else {
+                renderAllyHp()
+            }
         }
     }
     else {
@@ -224,16 +280,19 @@ while(!battleOver()){
         }
         else {
             renderAllyHp()
-        }
-        executeMove(userMove, allyPokemon[0], cpuPokemon[0])
-        if (cpuPokemon[0].hp <= 0) {
-            console.log('fainted')
-            // TODO handle faint
-        }
-        else {
-            renderCPUHp()
+            executeMove(userMove, allyPokemon[0], cpuPokemon[0])
+            if (cpuPokemon[0].hp <= 0) {
+                cpuFaint()
+                if(cpuPokemon.length > 0){
+                    cpuNewPokemon()
+                }
+            }
+            else {
+                renderCPUHp()
+            }
         }
     }
 
+    console.log(battleOver())
     break
 }
