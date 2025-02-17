@@ -4,6 +4,7 @@ class Pokemon {
     constructor(info) {
         this.name = info.name;
         this.hp = info.stats[0].base_stat
+        this.max_hp = this.hp
         this.atk = info.stats[1].base_stat
         this.def = info.stats[2].base_stat
         this.sp_atk = info.stats[3].base_stat

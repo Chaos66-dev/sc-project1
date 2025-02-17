@@ -5,6 +5,7 @@ class Move {
         this.damage_class = info.damage_class.name
         this.power = info.power
         this.pp = info.pp
+        this.max_pp = this.pp
         this.priority = info.priority
         this.type = info.type.name
     }

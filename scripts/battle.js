@@ -61,7 +61,7 @@ async function initTeams(){
 }
 
 function renderAllyHp() {
-    document.getElementById("ally-hp-value").innerText = allyPokemon[0].hp
+    document.getElementById("ally-hp-value").innerText = `${allyPokemon[0].hp} / ${allyPokemon[0].max_hp}`
 }
 
 function renderAlly(){
@@ -71,7 +71,7 @@ function renderAlly(){
 }
 
 function renderCPUHp() {
-    document.getElementById("cpu-hp-value").innerText = cpuPokemon[0].hp
+    document.getElementById("cpu-hp-value").innerText = `${cpuPokemon[0].hp} / ${cpuPokemon[0].max_hp}`
 }
 
 function renderCPU(){
@@ -81,41 +81,21 @@ function renderCPU(){
 }
 
 function renderMoves() {
-    const move1 = document.getElementsByClassName('move1')[0]
-    let move1_name = move1.children[0]
-    let move1_type = move1.children[1].children[0]
-    let move1_pp = move1.children[1].children[1]
+    rerenderMove(0)
+    rerenderMove(1)
+    rerenderMove(2)
+    rerenderMove(3)
+}
 
-    move1_name.innerText = allyPokemon[0].moves[0].name
-    move1_type.innerText = allyPokemon[0].moves[0].type
-    move1_pp.innerText = allyPokemon[0].moves[0].pp
+function rerenderMove(move_num) {
+    const move = document.getElementsByClassName(`move${move_num}`)[0]
+    let move_name = move.children[0]
+    let move_type = move.children[1].children[0]
+    let move_pp = move.children[1].children[1]
 
-    const move2 = document.getElementsByClassName('move2')[0]
-    let move2_name = move2.children[0]
-    let move2_type = move2.children[1].children[0]
-    let move2_pp = move2.children[1].children[1]
-
-    move2_name.innerText = allyPokemon[0].moves[1].name
-    move2_type.innerText = allyPokemon[0].moves[1].type
-    move2_pp.innerText = allyPokemon[0].moves[1].pp
-
-    const move3 = document.getElementsByClassName('move3')[0]
-    let move3_name = move3.children[0]
-    let move3_type = move3.children[1].children[0]
-    let move3_pp = move3.children[1].children[1]
-
-    move3_name.innerText = allyPokemon[0].moves[2].name
-    move3_type.innerText = allyPokemon[0].moves[2].type
-    move3_pp.innerText = allyPokemon[0].moves[2].pp
-
-    const move4 = document.getElementsByClassName('move4')[0]
-    let move4_name = move4.children[0]
-    let move4_type = move4.children[1].children[0]
-    let move4_pp = move4.children[1].children[1]
-
-    move4_name.innerText = allyPokemon[0].moves[3].name
-    move4_type.innerText = allyPokemon[0].moves[3].type
-    move4_pp.innerText = allyPokemon[0].moves[3].pp
+    move_name.innerText = allyPokemon[0].moves[move_num].name
+    move_type.innerText = allyPokemon[0].moves[move_num].type
+    move_pp.innerText = `${allyPokemon[0].moves[move_num].pp} / ${allyPokemon[0].moves[move_num].max_pp}`
 }
 
 function battleOver() {
@@ -132,27 +112,32 @@ function getCPUMove() {
 }
 
 function userMoveInput(event, resolve){
-    if (event.currentTarget == document.getElementsByClassName('move1')[0]) {
+    if (event.currentTarget == document.getElementsByClassName('move0')[0]) {
         userMoveSelection = 0
+        allyPokemon[0].moves[0].pp--
+    }
+    else if (event.currentTarget == document.getElementsByClassName('move1')[0]) {
+        userMoveSelection = 1
+        allyPokemon[0].moves[1].pp--
     }
     else if (event.currentTarget == document.getElementsByClassName('move2')[0]) {
-        userMoveSelection = 1
+        userMoveSelection = 2
+        allyPokemon[0].moves[2].pp--
     }
     else if (event.currentTarget == document.getElementsByClassName('move3')[0]) {
-        userMoveSelection = 2
-    }
-    else if (event.currentTarget == document.getElementsByClassName('move4')[0]) {
         userMoveSelection = 3
+        allyPokemon[0].moves[3].pp--
     }
+    rerenderMove(userMoveSelection)
     resolve(userMoveSelection)
 }
 
 async function getUserMove(){
     return new Promise((resolve) => {
+        document.getElementsByClassName('move0')[0].addEventListener('click', (event) => userMoveInput(event, resolve));
         document.getElementsByClassName('move1')[0].addEventListener('click', (event) => userMoveInput(event, resolve));
         document.getElementsByClassName('move2')[0].addEventListener('click', (event) => userMoveInput(event, resolve));
         document.getElementsByClassName('move3')[0].addEventListener('click', (event) => userMoveInput(event, resolve));
-        document.getElementsByClassName('move4')[0].addEventListener('click', (event) => userMoveInput(event, resolve));
     })
 }
 
@@ -169,7 +154,6 @@ function decidePriority(userMove, cpuMove) {
 }
 
 function executeMove(move, attackingMon, defendingMon) {
-    // TODO make ui say what move the user is using
     alert(`${attackingMon.name} used ${move.name}`)
     let base_power = move.power
     if (move.damage_class == 'special') {
@@ -181,6 +165,7 @@ function executeMove(move, attackingMon, defendingMon) {
 
     // TODO implement stab
     // TODO implement status conditions
+    // TODO implement move pp check
 
     if (Math.random() > move.accuracy/100 && move.damage_class != 'status') {
         alert(`${attackingMon.name}'s attack missed!`)
@@ -215,6 +200,9 @@ while(!battleOver()){
         if (cpuPokemon[0].hp <= 0) {
             console.log('fainted')
             // TODO handle faint
+            // set heath to zero, render health
+            // allow user to switch pokemon if available, skip execution of cpu move
+            // if not available, pop pokemon and handle end of game
         }
         else {
             renderCPUHp()
