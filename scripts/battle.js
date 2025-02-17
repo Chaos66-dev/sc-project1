@@ -168,8 +168,8 @@ function executeMove(move, attackingMon, defendingMon) {
         return
     }
 
-    // let damage = Math.round(base_power/3)
-    let damage = Math.round(base_power*2)
+    let damage = Math.round(base_power/3)
+    // let damage = Math.round(base_power*2) used for testing (make damage super high so i ko the other pokemon)
     defendingMon.hp -= damage
     alert(`${attackingMon.name}'s attack did ${damage} damage`)
 }
@@ -213,12 +213,19 @@ renderAlly()
 renderCPU()
 renderMoves()
 
+let turnNum = 1
 while(!battleOver()){
+    alert(`Turn: ${turnNum++}`)
 
     // get both moves to be used in next turn
     var cpuMove = ''
     if(hasAnyPP(cpuPokemon[0])){
         cpuMove = getCPUMove()
+        let tmp = cpuMove.pp
+        while (tmp <= 0) {
+            cpuMove = getCPUMove()
+            tmp = cpuMove.pp
+        }
         console.log(cpuMove)
     }
     else {
@@ -234,7 +241,6 @@ while(!battleOver()){
         while (tmp <= 0) {
             alert('This move has no more pp. please choose another move.')
             userMove = await getUserMove()
-            // TODO has an issue where this only detects once
             tmp = allyPokemon[0].moves[userMove].pp
         }
         userMove = allyPokemon[0].moves[userMove]
