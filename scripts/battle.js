@@ -75,6 +75,11 @@ document.getElementById('nav-item-repo').addEventListener('click', function() {
     window.location.href = "https://github.com/Chaos66-dev/sc-project1"
 })
 
+document.getElementById('run').addEventListener('click', function() {
+    alert('coward')
+    window.location.href = "index.html";
+})
+
 // Creates instance of pokemon class and selects moves
 async function createPokemon(data) {
     let poke = new Pokemon(data)

@@ -197,7 +197,7 @@ body, html {
     padding: 1%;
 }
 
-.run {
+#run {
     border-radius: 2em;
     background-color: rgb(47, 47, 255);
     padding: 1%;
