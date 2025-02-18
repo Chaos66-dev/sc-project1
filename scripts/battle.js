@@ -545,7 +545,13 @@ function executeMove(move, attackingMon, defendingMon) {
 
     // secondary effect
     if(Math.random() < move.effect_chance/100 && move.stat_changes.length > 0) {
-        if(move.target.includes('opponent') || move.target.includes('selected-pokemon')){
+        if(move.meta.category.name == 'damage+raise'){
+            applyStatChange(move.stat_changes, attackingMon)
+        }
+        else if(move.meta.category.name == 'damage+lower'){
+            applyStatChange(move.stat_changes, attackingMon)
+        }
+        else if(move.target.includes('opponent') || move.target.includes('selected-pokemon')){
             applyStatChange(move.stat_changes, defendingMon)
         }
         else if(move.target.includes('user') || move.target.includes('ally')){
