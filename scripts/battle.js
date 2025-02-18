@@ -83,6 +83,9 @@ document.getElementById('run').addEventListener('click', function() {
 // Creates instance of pokemon class and selects moves
 async function createPokemon(data) {
     let poke = new Pokemon(data)
+    if (poke.back_default_sprite == null) {
+        throw RangeException('does not have a back sprite')
+    }
     await poke.selectMoves()
     return poke
 }
@@ -99,6 +102,14 @@ async function requestPokemon(party, pokemonName = '') {
     }
     else {
         // request pokemon with pokemonName
+
+        const response = await fetch(baseURL + "/" + pokemonName)
+        if (response.status == 404) {
+            throw RangeError('not a valid pokemon name')
+        }
+        const data = await response.json()
+
+        party.push(await createPokemon(data))
     }
 };
 
@@ -107,12 +118,24 @@ async function initTeams(){
         if(teamChoice == "randomized") {
             await requestPokemon(allyPokemon)
         }
+        else if (teamChoice == 'pick-team'){
+            let success = false
+            while (!success) {
+                try {
+                    let pokemon = prompt("Enter a pokemon name").toLowerCase().trim()
+                    await requestPokemon(allyPokemon, pokemon)
+                    success = true
+                }
+                catch (error) {
+                    alert('Please enter a pokemon name from Gen 1-5')
+                }
+            }
+
+        }
     }
 
     for(let i = 0; i < cpuNum; i++) {
-        if(teamChoice == "randomized") {
-            await requestPokemon(cpuPokemon)
-        }
+        await requestPokemon(cpuPokemon)
     }
     console.log(allyPokemon)
 
@@ -394,10 +417,8 @@ renderAlly()
 renderCPU()
 renderMoves()
 
-let turnNum = 1
-while(!battleOver()){
-    // alert(`Turn: ${turnNum++}`)
 
+while(!battleOver()){
     // get both moves to be used in next turn
     var cpuMove = ''
     if(hasAnyPP(cpuPokemon[0])){
@@ -486,3 +507,16 @@ while(!battleOver()){
 }
 
 endOfGame()
+
+
+// TODO list
+// TODO: handle when a pokemon is completely out of pp
+// TODO: handle moves that affect the stats of a pokemon
+// TODO: handle 'status' moves
+// TODO: allow user to select number of full restores to go into battle with
+// TODO: implement full restore functionality
+// TODO: implement a better CPU AI
+// TODO: allow user to select party of pokemon
+// TODO: make move selection for each pokemon favor their later learned moves
+// TODO: allow user to switch out pokemon
+// TODO: allow user to see summary of selected pokemon/moves
