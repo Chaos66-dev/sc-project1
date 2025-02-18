@@ -8,6 +8,60 @@ let teamChoice = localStorage.getItem("teamChoice");
 
 let allyPokemon = []
 let cpuPokemon = []
+let superEffective = {'normal': [],
+                    'fire': ['grass', 'ice', 'bug', 'steel'],
+                    'water': ['fire', 'ground', 'rock'],
+                    'electric': ['water', 'flying'],
+                    'grass': ['water', 'ground', 'rock'],
+                    'ice': ['grass', 'ground', 'flying', 'dragon'],
+                    'fighting': ['normal', 'ice', 'rock', 'dark', 'steel'],
+                    'poison': ['grass', 'fairy'],
+                    'ground': ['fire', 'electric', 'poison', 'rock', 'steel'],
+                    'flying': ['grass', 'fighting', 'bug'],
+                    'psychic': ['fighting', 'poison'],
+                    'bug': ['grass', 'psychic', 'dark'],
+                    'rock': ['fire', 'ice', 'flying', 'bug'],
+                    'ghost': ['psychic', 'ghost'],
+                    'dragon': ['dragon'],
+                    'dark': ['psychic', 'ghost'],
+                    'steel': ['ice', 'rock', 'fairy'],
+                    'fairy': ['fighting', 'dragon', 'dark']}
+let notVeryEffective = {'normal': ['rock', 'steel'],
+                    'fire': ['fire', 'water', 'rock', 'dragon'],
+                    'water': ['water', 'grass', 'dragon'],
+                    'electric': ['electric', 'grass', 'dragon'],
+                    'grass': ['fire', 'grass', 'poison', 'flying', 'bug', 'dragon', 'steel'],
+                    'ice': ['fire', 'water', 'ice', 'steel'],
+                    'fighting': ['poison', 'flying', 'psychic', 'bug', 'fairy'],
+                    'poison': ['poison', 'ground', 'rock', 'ghost'],
+                    'ground': ['grass', 'bug'],
+                    'flying': ['electric', 'rock', 'steel'],
+                    'psychic': ['psychic', 'steel'],
+                    'bug': ['fire', 'fighting', 'poison', 'flying', 'rock', 'steel', 'fairy'],
+                    'rock': ['fighting', 'ground', 'steel'],
+                    'ghost': ['dark'],
+                    'dragon': ['steel'],
+                    'dark': ['fighting', 'dark', 'fairy'],
+                    'steel': ['fire', 'water', 'electric', 'steel'],
+                    'fairy': ['fire', 'poison', 'steel']}
+let noEffect = {'normal': ['ghost'],
+                    'fire': [],
+                    'water': [],
+                    'electric': ['ground'],
+                    'grass': [],
+                    'ice': [],
+                    'fighting': ['ghost'],
+                    'poison': ['steel'],
+                    'ground': ['flying'],
+                    'flying': [],
+                    'psychic': ['dark'],
+                    'bug': [],
+                    'rock': [],
+                    'ghost': ['normal'],
+                    'dragon': ['fairy'],
+                    'dark': [],
+                    'steel': [],
+                    'fairy': []}
 let userMoveSelection = -1
 
 // add event handler to redirect to home page on click
@@ -149,9 +203,37 @@ function decidePriority(userMove, cpuMove) {
     }
 }
 
+function effectivenessCheck(move_type, defendingMonTypes) {
+    let effectiveness = 1
+    for(let mon_type of defendingMonTypes) {
+        if(superEffective[move_type].includes(mon_type)){
+            effectiveness *= 2
+        }
+        if(notVeryEffective[move_type].includes(mon_type)){
+            effectiveness /= 2
+        }
+        if(noEffect[move_type].includes(mon_type)) {
+            effectiveness = 0
+        }
+    }
+    return effectiveness
+}
+
 function executeMove(move, attackingMon, defendingMon) {
     alert(`${attackingMon.name} used ${move.name}`)
+    let damage_roll_multiplier = 1 + (Math.random()/10) - 0.05
     let base_power = move.power
+
+    // stab check
+    if (attackingMon.types.includes(move.type)) {
+        base_power *= 1.5
+        console.log('stab')
+    }
+
+    // super/not effective check
+    let effectiveness = effectivenessCheck(move.type, defendingMon.types)
+    base_power *= effectiveness
+
     if (move.damage_class == 'special') {
         base_power *= (attackingMon.sp_atk / defendingMon.sp_def)
     }
@@ -159,19 +241,25 @@ function executeMove(move, attackingMon, defendingMon) {
         base_power *= (attackingMon.atk / defendingMon.sp_def)
     }
 
-    // TODO implement stab
     // TODO implement status conditions
-    // TODO implement move pp check
 
     if (Math.random() > move.accuracy/100 && move.damage_class != 'status') {
         alert(`${attackingMon.name}'s attack missed!`)
         return
     }
 
-    let damage = Math.round(base_power/3)
-    // let damage = Math.round(base_power*2) used for testing (make damage super high so i ko the other pokemon)
+    let damage = Math.round((base_power * damage_roll_multiplier)/3)
     defendingMon.hp -= damage
     alert(`${attackingMon.name}'s attack did ${damage} damage`)
+    if(effectiveness > 1) {
+        alert(`${attackingMon.name}'s move was super effective!`)
+    }
+    else if (effectiveness < 1 && effectiveness > 0) {
+        alert(`${attackingMon.name}'s move was not very effective...`)
+    }
+    else if (effectiveness == 0) {
+        alert(`${attackingMon.name}'s move had no effect`)
+    }
 }
 
 function hasAnyPP(mon){
@@ -208,6 +296,31 @@ function cpuNewPokemon() {
     renderCPU()
 }
 
+function allyFaint() {
+    allyPokemon[0].hp = 0
+    renderAllyHp()
+    alert(`${allyPokemon[0].name} fainted`)
+    allyPokemon.shift()
+}
+
+// TODO stretch goal of allowing user to choose next pokemon
+function allyNewPokemon() {
+    alert(`Ally sends out ${allyPokemon[0].name}`)
+    renderAlly()
+    renderMoves()
+}
+
+function endOfGame() {
+    if (allyPokemon.length == 0) {
+        alert('You blacked out')
+    }
+    else if (cpuPokemon.length == 0) {
+        alert('You defeated the CPU!')
+    }
+    localStorage.clear()
+    window.location.href = "index.html";
+}
+
 await initTeams()
 renderAlly()
 renderCPU()
@@ -215,7 +328,7 @@ renderMoves()
 
 let turnNum = 1
 while(!battleOver()){
-    alert(`Turn: ${turnNum++}`)
+    // alert(`Turn: ${turnNum++}`)
 
     // get both moves to be used in next turn
     var cpuMove = ''
@@ -270,8 +383,10 @@ while(!battleOver()){
             renderCPUHp()
             executeMove(cpuMove, cpuPokemon[0], allyPokemon[0])
             if (allyPokemon[0].hp <= 0) {
-                console.log('fainted')
-                // TODO handle faint
+                allyFaint()
+                if(allyPokemon.length > 0){
+                    allyNewPokemon()
+                }
             }
             else {
                 renderAllyHp()
@@ -281,8 +396,10 @@ while(!battleOver()){
     else {
         executeMove(cpuMove, cpuPokemon[0], allyPokemon[0])
         if (allyPokemon[0].hp <= 0) {
-            console.log('fainted')
-            // TODO handle faint
+            allyFaint()
+                if(allyPokemon.length > 0){
+                    allyNewPokemon()
+                }
         }
         else {
             renderAllyHp()
@@ -298,7 +415,6 @@ while(!battleOver()){
             }
         }
     }
-
-    console.log(battleOver())
-    break
 }
+
+endOfGame()
