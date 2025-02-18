@@ -39,7 +39,7 @@ const moveBlacklist =[
     'will-o-wisp',
     'ally-swtich',
     'copycat',
-    // 'thunder-wave',
+    'power-swap',
     'nightmare',
     'sunny-day',
     'mean-look',
@@ -65,7 +65,23 @@ const moveBlacklist =[
     'frustration',
     'wonder-room',
     'reflect',
-    'spikes'
+    'spikes',
+    'pay-day',
+    'leech-seed',
+    'guard-split',
+    'recycle',
+    'miracle-eye',
+    'safeguard',
+    'sandstorm',
+    'ally-switch',
+    'misty-terrain',
+    'imprison',
+    'magic-room',
+    'magnet-rise',
+    'laser-focus',
+    'grassy-terrain',
+    'synthesis',
+    'yawn'
 ]
 const struggle = fetch('https://pokeapi.co/api/v2/move/struggle')
                     .then(response => response.json())

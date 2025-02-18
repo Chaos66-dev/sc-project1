@@ -28,6 +28,7 @@ http://localhost:8000/
 3. Items are not implemented and the button has no function
 4. The player cannot switch pokemon as they like, pokemon only switch on faint
 5. Damage is not calculated based on the nintendo formula. It is an estimation from my end on what feels like a reasonable damage calculation.
+6. All moves that inflict a weather effect are not implemented
 
 # Game mechanics that are implemented
 1. Typing - Moves can be super effective/not very effective/have no effect based on the move and opponent type
