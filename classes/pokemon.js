@@ -10,6 +10,13 @@ class Pokemon {
         this.sp_atk = info.stats[3].base_stat
         this.sp_def = info.stats[4].base_stat
         this.speed = info.stats[5].base_stat
+        this.atk_mult = 1
+        this.def_mult = 1
+        this.sp_atk_mult = 1
+        this.sp_def_mult = 1
+        this.speed_mult = 1
+        this.accuracy_mult = 1
+        this.evasiveness_mult = 1
         this.types = info.types.filter(typ => typ.type.name)
         this.back_default_sprite = info.sprites.back_default
         this.front_default_sprite = info.sprites.front_default

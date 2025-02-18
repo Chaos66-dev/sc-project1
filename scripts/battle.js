@@ -1,10 +1,15 @@
 import Pokemon from '../classes/pokemon.js'
+import Move from '../classes/move.js'
 
 let baseURL = 'https://pokeapi.co/api/v2/pokemon'
 
 let allyNum = localStorage.getItem("allyNum");
 let cpuNum = localStorage.getItem("cpuNum");
 let teamChoice = localStorage.getItem("teamChoice");
+const struggle = fetch('https://pokeapi.co/api/v2/move/struggle')
+                    .then(response => response.json())
+                    .then(data => new Move(data))
+
 
 let allyPokemon = []
 let cpuPokemon = []
@@ -289,7 +294,7 @@ function decidePriority(userMove, cpuMove) {
         return 'cpu'
     }
     else {
-        return allyPokemon[0].speed >= cpuPokemon[0].speed ? 'user' : 'cpu' // user always wins speed ties
+        return (allyPokemon[0].speed * allyPokemon[0].speed_mult) >= (cpuPokemon[0].speed * cpuPokemon[0].speed_mult) ? 'user' : 'cpu' // user always wins speed ties
     }
 }
 
@@ -309,6 +314,67 @@ function effectivenessCheck(move_type, defendingMonTypes) {
     return effectiveness
 }
 
+function applyStatChange(stat_changes, mon) {
+    let changes = []
+    for (let effect of stat_changes) {
+        switch (effect.stat.name) {
+            case 'attack':
+                mon.atk_mult += 0.2 * effect.change
+                changes.push({'attack': effect.change})
+                break;
+            case 'defense':
+                mon.def_mult += 0.2 * effect.change
+                changes.push({'defense': effect.change})
+                break;
+            case 'special-attack':
+                mon.sp_atk_mult += 0.2 * effect.change
+                changes.push({'special-attack': effect.change})
+                break;
+            case 'special-defense':
+                mon.sp_def_mult += 0.2 * effect.change
+                changes.push({'special-defense': effect.change})
+                break;
+            case 'speed':
+                mon.speed_mult += 0.2 * effect.change
+                changes.push({'speed': effect.change})
+                break;
+            case 'accuracy':
+                mon.accuracy_mult += 0.2 * effect.change
+                changes.push({'accuracy': effect.change})
+                break;
+            case 'evasion':
+                mon.evasiveness_mult_mul += 0.2 * effect.change
+                changes.push({'evassiveness': effect.change})
+                break;
+            default:
+                alert('something bad happened while applying stat changes')
+        }
+    }
+
+    changes.forEach(tmp => {
+        let key = Object.keys(tmp)[0]
+        let value = tmp[key]
+        console.log(value)
+        switch (value) {
+            case 1:
+                alert(`${mon.name}'s ${key} rose`)
+                break
+            case -1:
+                alert(`${mon.name}'s ${key} fell`)
+                break
+            case 2:
+                alert(`${mon.name}'s ${key} sharply rose`)
+                break
+            case -2:
+                alert(`${mon.name}'s ${key} shaply fell`)
+                break
+            default:
+                alert('something bad happened while applying stat changes')
+                break
+        }
+    })
+}
+
 function executeMove(move, attackingMon, defendingMon) {
     alert(`${attackingMon.name} used ${move.name}`)
     let damage_roll_multiplier = 1 + (Math.random()/10) - 0.05
@@ -325,16 +391,26 @@ function executeMove(move, attackingMon, defendingMon) {
     base_power *= effectiveness
 
     if (move.damage_class == 'special') {
-        base_power *= (attackingMon.sp_atk / defendingMon.sp_def)
+        base_power *= ((attackingMon.sp_atk * attackingMon.sp_atk_mult) / (defendingMon.sp_def * defendingMon.sp_def_mult))
     }
     else if (move.damage_class == 'physical') {
-        base_power *= (attackingMon.atk / defendingMon.sp_def)
+        base_power *= ((attackingMon.atk * attackingMon.atk_mult) / (defendingMon.sp_def * defendingMon.sp_def_mult))
     }
 
-    // TODO implement status moves
     // TODO implement stat changing moves
+    if (move.damage_class == 'status' &&  move.stat_changes.length > 0) {
+        // opponent, selected-pokemon, all-pokemon, user, ally
+        if(move.target.includes('opponent') || move.target.includes('selected-pokemon')){
+            applyStatChange(move.stat_changes, defendingMon)
+        }
+        else if(move.target.includes('user') || move.target.includes('ally')){
+            applyStatChange(move.stat_changes, attackingMon)
+        }
+        return
+    }
+    // TODO implement status moves
 
-    if (Math.random() > move.accuracy/100 && move.damage_class != 'status') {
+    if ((Math.random() * attackingMon.accuracy_mult) > ((move.accuracy/100) * defendingMon.evasiveness_mult) && move.damage_class != 'status' && move.name != 'struggle') {
         alert(`${attackingMon.name}'s attack missed!`)
         return
     }
@@ -417,7 +493,6 @@ renderAlly()
 renderCPU()
 renderMoves()
 
-
 while(!battleOver()){
     // get both moves to be used in next turn
     var cpuMove = ''
@@ -432,7 +507,7 @@ while(!battleOver()){
     }
     else {
         console.log('cpu pokemon is out of all move pp')
-        // TODO handle this case
+        cpuMove = await struggle
     }
 
     // check to see if at least one move has pp, else handle
@@ -449,8 +524,8 @@ while(!battleOver()){
         console.log(userMove)
     }
     else {
-        console.log('all moves are out of pp')
-        // TODO handle this case
+        alert('all moves are out of pp')
+        userMove = await struggle
     }
 
     // decrease move pp
@@ -510,13 +585,12 @@ endOfGame()
 
 
 // TODO list
-// TODO: handle when a pokemon is completely out of pp
 // TODO: handle moves that affect the stats of a pokemon
+// TODO: handle moves that hurt the user
 // TODO: handle 'status' moves
 // TODO: allow user to select number of full restores to go into battle with
 // TODO: implement full restore functionality
 // TODO: implement a better CPU AI
-// TODO: allow user to select party of pokemon
 // TODO: make move selection for each pokemon favor their later learned moves
 // TODO: allow user to switch out pokemon
 // TODO: allow user to see summary of selected pokemon/moves

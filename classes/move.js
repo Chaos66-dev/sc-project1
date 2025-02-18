@@ -8,6 +8,8 @@ class Move {
         this.max_pp = this.pp
         this.priority = info.priority
         this.type = info.type.name
+        this.stat_changes = info.stat_changes
+        this.target = info.target.name
     }
 
     toString() {
