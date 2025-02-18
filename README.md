@@ -24,7 +24,7 @@ http://localhost:8000/
 
 # Game mechanics that are not implemented
 1. There is a non-comprehensive list of blacklisted moves in the battle.js file as these moves are useless due to their individual effects not being implemented in this game.
-2. All moves that involve inflicting burn, freeze, sleep, poison, paralysis, and confusion are not implemented.
+2. All moves that involve inflicting burn, freeze, sleep, poison, and confusion are not implemented.
 3. Items are not implemented and the button has no function
 4. The player cannot switch pokemon as they like, pokemon only switch on faint
 5. Damage is not calculated based on the nintendo formula. It is an estimation from my end on what feels like a reasonable damage calculation.
@@ -35,6 +35,7 @@ http://localhost:8000/
 2. Stat Changes - Moves can increase or decrease individual stats of pokemon
 3. High/Low rolling dmg - There is a slight randomness to how much damage a move does (usually around +/- 3 dmg)
 4. DMG - Damage calculation takes into account attacking and defending pokemon stats
+5. Paralysis - Paralysis is the only status that is currently implemented
 
 
 ## Contact
