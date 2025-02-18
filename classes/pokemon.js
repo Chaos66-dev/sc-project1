@@ -17,6 +17,7 @@ class Pokemon {
         this.speed_mult = 1
         this.accuracy_mult = 1
         this.evasiveness_mult = 1
+        this.status = null
         this.types = info.types.filter(typ => typ.type.name)
         this.back_default_sprite = info.sprites.back_default
         this.front_default_sprite = info.sprites.front_default

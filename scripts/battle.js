@@ -39,7 +39,7 @@ const moveBlacklist =[
     'will-o-wisp',
     'ally-swtich',
     'copycat',
-    'thunder-wave',
+    // 'thunder-wave',
     'nightmare',
     'sunny-day',
     'mean-look',
@@ -212,10 +212,27 @@ function renderAllyHp() {
     document.getElementById("ally-hp-value").innerText = `${allyPokemon[0].hp} / ${allyPokemon[0].max_hp}`
 }
 
+function rerenderAllyName() {
+    let addedText = ''
+    if (allyPokemon[0].status != null) {
+        addedText = `\n${allyPokemon[0].status}`
+    }
+    document.getElementById("ally-pokemon-name").innerText = allyPokemon[0].name + addedText
+}
+
+
 function renderAlly(){
     document.getElementById("allyBattleSprite").src = allyPokemon[0].back_default_sprite
-    document.getElementById("ally-pokemon-name").innerText = allyPokemon[0].name
+    rerenderAllyName()
     renderAllyHp()
+}
+
+function rerenderCPUName() {
+    let addedText = ''
+    if (cpuPokemon[0].status != null) {
+        addedText = `\n${cpuPokemon[0].status}`
+    }
+    document.getElementById("cpu-pokemon-name").innerText = cpuPokemon[0].name + addedText
 }
 
 function renderCPUHp() {
@@ -434,10 +451,26 @@ function applyStatChange(stat_changes, mon) {
     })
 }
 
+function inflictParalysis(mon) {
+    mon.status = 'paralysis'
+    mon.speed_mult -= 0.5
+    alert(`${mon.name} was paralyzed`)
+    rerenderAllyName()
+    rerenderCPUName()
+}
+
 function executeMove(move, attackingMon, defendingMon) {
     alert(`${attackingMon.name} used ${move.name}`)
     let damage_roll_multiplier = 1 + (Math.random()/10) - 0.05
     let base_power = move.power
+
+    // paralysis check
+    if (attackingMon.status == 'paralysis'){
+        if(Math.random() < 0.25){
+            alert(`${attackingMon} is paralyzed and can't move`)
+            return
+        }
+    }
 
     // stab check
     if (attackingMon.types.includes(move.type)) {
@@ -456,7 +489,7 @@ function executeMove(move, attackingMon, defendingMon) {
         base_power *= ((attackingMon.atk * attackingMon.atk_mult) / (defendingMon.sp_def * defendingMon.sp_def_mult))
     }
 
-    // TODO implement stat changing moves
+    // stat changing moves
     if (move.damage_class == 'status' &&  move.stat_changes.length > 0) {
         // opponent, selected-pokemon, all-pokemon, user, ally
         if(move.target.includes('opponent') || move.target.includes('selected-pokemon')){
@@ -470,6 +503,9 @@ function executeMove(move, attackingMon, defendingMon) {
             applyStatChange(move.stat_changes, defendingMon)
         }
         return
+    }
+    else if (move.damage_class == 'status' && move.meta.ailment.name == 'paralysis'){
+        inflictParalysis(defendingMon)
     }
     // TODO implement status moves
 
@@ -502,6 +538,20 @@ function executeMove(move, attackingMon, defendingMon) {
         else if(move.target.includes('all-pokemon')){
             applyStatChange(move.stat_changes, attackingMon)
             applyStatChange(move.stat_changes, defendingMon)
+        }
+    }
+    else if (Math.random() < move.meta.ailment_chance/100) {
+        if(move.meta.ailment.name == 'paralysis'){
+            if(move.target.includes('opponent') || move.target.includes('selected-pokemon')){
+                inflictParalysis(defendingMon)
+            }
+            else if(move.target.includes('user') || move.target.includes('ally')){
+                inflictParalysis(attackingMon)
+            }
+            else if(move.target.includes('all-pokemon')){
+                inflictParalysis(defendingMon)
+                inflictParalysis(attackingMon)
+            }
         }
     }
 }
@@ -663,7 +713,7 @@ endOfGame()
 
 // TODO list
 // TODO: handle moves that hurt the user
-// TODO: handle moves that apply burn, freeze, sleep, poison, confusion, paralysis
+// TODO: handle moves that apply burn, freeze, sleep, poison, confusion
 // TODO: allow user to select number of full restores to go into battle with
 // TODO: implement full restore functionality
 // TODO: implement a better CPU AI

@@ -11,6 +11,7 @@ class Move {
         this.stat_changes = info.stat_changes
         this.target = info.target.name
         this.effect_chance = info.effect_chance
+        this.meta = info.meta
     }
 
     toString() {
