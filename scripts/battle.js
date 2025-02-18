@@ -141,6 +141,66 @@ function renderMoves() {
     rerenderMove(3)
 }
 
+function renderMoveType(move_type) {
+    switch (move_type.innerText) {
+        case 'normal':
+            move_type.style.background = '#aab09f';
+            break;
+        case 'fire':
+            move_type.style.background = '#ea7a3c';
+            break;
+        case 'water':
+            move_type.style.background = '#539ae2';
+            break;
+        case 'electric':
+            move_type.style.background = '#e5c531';
+            break;
+        case 'grass':
+            move_type.style.background = '#71c558';
+            break;
+        case 'ice':
+            move_type.style.background = '#70cbd4';
+            break;
+        case 'fighting':
+            move_type.style.background = '#cb5f48';
+            break;
+        case 'poison':
+            move_type.style.background = '#b468b7';
+            break;
+        case 'ground':
+            move_type.style.background = '#cc9f4f';
+            break;
+        case 'flying':
+            move_type.style.background = '#7da6de';
+            break;
+        case 'psychic':
+            move_type.style.background = '#e5709b';
+            break;
+        case 'bug':
+            move_type.style.background = '#94bc4a';
+            break;
+        case 'rock':
+            move_type.style.background = '#b2a061';
+            break;
+        case 'ghost':
+            move_type.style.background = '#846ab6';
+            break;
+        case 'dragon':
+            move_type.style.background = '#6a7baf';
+            break;
+        case 'dark':
+            move_type.style.background = '#736c75';
+            break;
+        case 'steel':
+            move_type.style.background = '#89a1b0';
+            break;
+        case 'fairy':
+            move_type.style.background = '#e397d1';
+            break;
+    }
+    move_type.style.borderRadius = '2em'
+}
+
 function rerenderMove(move_num) {
     const move = document.getElementsByClassName(`move${move_num}`)[0]
     let move_name = move.children[0]
@@ -150,7 +210,9 @@ function rerenderMove(move_num) {
 
     move_name.innerText = allyPokemon[0].moves[move_num].name
     move_type.innerText = allyPokemon[0].moves[move_num].type
+    renderMoveType(move_type)
     move_pp.innerText = `${mon_available_pp} / ${allyPokemon[0].moves[move_num].max_pp}`
+    console.log(`${mon_available_pp} / ${allyPokemon[0].moves[move_num].max_pp}`)
 }
 
 function battleOver() {
@@ -241,7 +303,8 @@ function executeMove(move, attackingMon, defendingMon) {
         base_power *= (attackingMon.atk / defendingMon.sp_def)
     }
 
-    // TODO implement status conditions
+    // TODO implement status moves
+    // TODO implement stat changing moves
 
     if (Math.random() > move.accuracy/100 && move.damage_class != 'status') {
         alert(`${attackingMon.name}'s attack missed!`)
