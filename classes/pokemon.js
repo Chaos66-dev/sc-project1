@@ -52,7 +52,7 @@ class Pokemon {
                 MOVES: ${this.moves}`
     }
 
-    async selectMoves() {
+    async selectMoves(blacklist) {
         let selected_idxs = []
         let selected_moves = []
         while (selected_moves.length < 4){
@@ -61,10 +61,15 @@ class Pokemon {
                 continue
             }
             else {
-                selected_idxs.push(rand_mv);
                 let response = await fetch(this.possible_moves[rand_mv].url);
                 let data = await response.json()
-                selected_moves.push(new Move(data))
+                if(blacklist.includes(data.name)) {
+                    continue
+                }
+                else {
+                    selected_idxs.push(rand_mv);
+                    selected_moves.push(new Move(data))
+                }
             }
         }
         this.moves = selected_moves

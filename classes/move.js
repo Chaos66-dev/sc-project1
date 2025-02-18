@@ -10,6 +10,7 @@ class Move {
         this.type = info.type.name
         this.stat_changes = info.stat_changes
         this.target = info.target.name
+        this.effect_chance = info.effect_chance
     }
 
     toString() {

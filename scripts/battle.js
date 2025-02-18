@@ -6,6 +6,67 @@ let baseURL = 'https://pokeapi.co/api/v2/pokemon'
 let allyNum = localStorage.getItem("allyNum");
 let cpuNum = localStorage.getItem("cpuNum");
 let teamChoice = localStorage.getItem("teamChoice");
+const moveBlacklist =[
+    'supersonic',
+    'hail',
+    'heal-pulse',
+    'protect',
+    'rest',
+    'flash',
+    'magic-coat',
+    'snore',
+    'encore',
+    'toxic',
+    'telekinesis',
+    'roar',
+    'odor-sleuth',
+    'mist',
+    'mimic',
+    'counter',
+    'light-screen',
+    'detect',
+    'endure',
+    'substitute',
+    'spite',
+    'feather-dance',
+    'rain-dance',
+    'snatch',
+    'confuse-ray',
+    'taunt',
+    'poison-powder',
+    'sleep-powder',
+    'attract',
+    'will-o-wisp',
+    'ally-swtich',
+    'copycat',
+    'thunder-wave',
+    'nightmare',
+    'sunny-day',
+    'mean-look',
+    'rage-powder',
+    'after-you',
+    'tailwind',
+    'sleep-talk',
+    'curse',
+    'helping-hand',
+    'role-play',
+    'electric-terrain',
+    'disable',
+    'confide',
+    'heal-bell',
+    'acupressure',
+    'water-sport',
+    'haze',
+    'psych-up',
+    'swallow',
+    'switcheroo',
+    'skill-swap',
+    'focus-energy',
+    'frustration',
+    'wonder-room',
+    'reflect',
+    'spikes'
+]
 const struggle = fetch('https://pokeapi.co/api/v2/move/struggle')
                     .then(response => response.json())
                     .then(data => new Move(data))
@@ -91,7 +152,7 @@ async function createPokemon(data) {
     if (poke.back_default_sprite == null) {
         throw RangeException('does not have a back sprite')
     }
-    await poke.selectMoves()
+    await poke.selectMoves(moveBlacklist)
     return poke
 }
 
@@ -245,7 +306,6 @@ function rerenderMove(move_num) {
     move_type.innerText = allyPokemon[0].moves[move_num].type
     renderMoveType(move_type)
     move_pp.innerText = `${mon_available_pp} / ${allyPokemon[0].moves[move_num].max_pp}`
-    console.log(`${mon_available_pp} / ${allyPokemon[0].moves[move_num].max_pp}`)
 }
 
 function battleOver() {
@@ -354,7 +414,6 @@ function applyStatChange(stat_changes, mon) {
     changes.forEach(tmp => {
         let key = Object.keys(tmp)[0]
         let value = tmp[key]
-        console.log(value)
         switch (value) {
             case 1:
                 alert(`${mon.name}'s ${key} rose`)
@@ -406,6 +465,10 @@ function executeMove(move, attackingMon, defendingMon) {
         else if(move.target.includes('user') || move.target.includes('ally')){
             applyStatChange(move.stat_changes, attackingMon)
         }
+        else if(move.target.includes('all-pokemon')){
+            applyStatChange(move.stat_changes, attackingMon)
+            applyStatChange(move.stat_changes, defendingMon)
+        }
         return
     }
     // TODO implement status moves
@@ -426,6 +489,20 @@ function executeMove(move, attackingMon, defendingMon) {
     }
     else if (effectiveness == 0) {
         alert(`${attackingMon.name}'s move had no effect`)
+    }
+
+    // secondary effect
+    if(Math.random() < move.effect_chance/100 && move.stat_changes.length > 0) {
+        if(move.target.includes('opponent') || move.target.includes('selected-pokemon')){
+            applyStatChange(move.stat_changes, defendingMon)
+        }
+        else if(move.target.includes('user') || move.target.includes('ally')){
+            applyStatChange(move.stat_changes, attackingMon)
+        }
+        else if(move.target.includes('all-pokemon')){
+            applyStatChange(move.stat_changes, attackingMon)
+            applyStatChange(move.stat_changes, defendingMon)
+        }
     }
 }
 
@@ -585,12 +662,10 @@ endOfGame()
 
 
 // TODO list
-// TODO: handle moves that affect the stats of a pokemon
 // TODO: handle moves that hurt the user
-// TODO: handle 'status' moves
+// TODO: handle moves that apply burn, freeze, sleep, poison, confusion, paralysis
 // TODO: allow user to select number of full restores to go into battle with
 // TODO: implement full restore functionality
 // TODO: implement a better CPU AI
-// TODO: make move selection for each pokemon favor their later learned moves
 // TODO: allow user to switch out pokemon
 // TODO: allow user to see summary of selected pokemon/moves
