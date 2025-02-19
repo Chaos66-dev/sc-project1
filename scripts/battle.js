@@ -89,7 +89,13 @@ const moveBlacklist =[
     'psychic-terrain',
     'poison-gas',
     'return',
-    'reversal'
+    'reversal',
+    'worry-seed',
+    'ingrain',
+    'nature-power',
+    'trick-room',
+    'low-kick',
+    'block'
 ]
 const struggle = fetch('https://pokeapi.co/api/v2/move/struggle')
                     .then(response => response.json())
@@ -615,10 +621,22 @@ function executeMove(move, attackingMon, defendingMon) {
         renderAllyHp()
         renderCPUHp()
     }
-    // TODO implement status moves
 
 
     let damage = Math.round((base_power * damage_roll_multiplier)/3)
+
+    // recoil calc
+    let recoil = 0
+    if(move.meta != null) {
+        let rec_dmg = Math.max(defendingMon.hp - damage, 0)
+        if (rec_dmg > 0) {
+            recoil = Math.round((move.meta.drain/100) * damage)
+        }
+        else {
+            recoil = Math.round((move.meta.drain/100) * defendingMon.hp)
+        }
+    }
+
     defendingMon.hp -= damage
     alert(`${attackingMon.name}'s attack did ${damage} damage`)
     if(effectiveness > 1) {
@@ -680,6 +698,14 @@ function executeMove(move, attackingMon, defendingMon) {
         else if (move.meta.ailment.name == 'yawn'){
             alert(`${defendingMon.name} grew drowsy`)
             defendingMon.sleep_turns = -1
+        }
+        // handle moves that have recoil
+        else if (move.meta.drain < 0) {
+            alert(`${attackingMon.name} was hurt by recoil`)
+            attackingMon.hp += recoil
+            console.log(`recoil: ${recoil}`)
+            renderAllyHp()
+            renderCPUHp()
         }
     }
 }
@@ -797,8 +823,31 @@ while(!battleOver()){
             if(cpuPokemon.length > 0){
                 cpuNewPokemon()
             }
+            else {
+                continue
+            }
+            if (allyPokemon[0].hp <= 0){
+                allyFaint()
+                if(allyPokemon.length > 0) {
+                    allyNewPokemon()
+                    renderAlly()
+                }
+                else {
+                    continue
+                }
+            }
         }
         else {
+            if (allyPokemon[0].hp <= 0){
+                allyFaint()
+                if(allyPokemon.length > 0) {
+                    allyNewPokemon()
+                    renderAlly()
+                }
+                else {
+                    continue
+                }
+            }
             renderCPUHp()
             executeMove(cpuMove, cpuPokemon[0], allyPokemon[0])
             if (allyPokemon[0].hp <= 0) {
@@ -819,8 +868,31 @@ while(!battleOver()){
                 if(allyPokemon.length > 0){
                     allyNewPokemon()
                 }
+                else {
+                    continue
+                }
+                if (cpuPokemon[0].hp <= 0){
+                    cpuFaint()
+                    if(cpuPokemon.length > 0) {
+                        cpuNewPokemon()
+                        renderCPU()
+                    }
+                    else {
+                        continue
+                    }
+                }
         }
         else {
+            if (cpuPokemon[0].hp <= 0){
+                cpuFaint()
+                if(cpuPokemon.length > 0) {
+                    cpuNewPokemon()
+                    renderCPU()
+                }
+                else {
+                    continue
+                }
+            }
             renderAllyHp()
             executeMove(userMove, allyPokemon[0], cpuPokemon[0])
             if (cpuPokemon[0].hp <= 0) {
