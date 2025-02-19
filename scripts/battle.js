@@ -105,7 +105,9 @@ const moveBlacklist =[
     'psywave',
     'metronome',
     'trick',
-    'assist'
+    'assist',
+    'natural-gift',
+    'life-dew'
 ]
 const struggle = fetch('https://pokeapi.co/api/v2/move/struggle')
                     .then(response => response.json())
