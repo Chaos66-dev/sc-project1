@@ -11,7 +11,7 @@ const moveBlacklist =[
     'hail',
     'heal-pulse',
     'protect',
-    'rest',
+    // 'rest',
     'flash',
     'magic-coat',
     'snore',
@@ -34,7 +34,7 @@ const moveBlacklist =[
     'confuse-ray',
     'taunt',
     'poison-powder',
-    'sleep-powder',
+    // 'sleep-powder',
     'attract',
     'will-o-wisp',
     'ally-swtich',
@@ -81,7 +81,10 @@ const moveBlacklist =[
     'laser-focus',
     'grassy-terrain',
     'synthesis',
-    'yawn'
+    // 'yawn', // maybe
+    'secret-power',
+    'teleport',
+    'endeavor'
 ]
 const struggle = fetch('https://pokeapi.co/api/v2/move/struggle')
                     .then(response => response.json())
@@ -475,6 +478,52 @@ function inflictParalysis(mon) {
     rerenderCPUName()
 }
 
+function inflictSleep(mon) {
+    mon.status = 'sleep'
+    mon.sleep_turns = 0
+    alert(`${mon.name} fell asleep`)
+    rerenderAllyName()
+    rerenderCPUName()
+}
+
+function checkSleep(mon) {
+    if(mon.status != 'sleep') {
+        return false
+    }
+    else {
+        if(mon.sleep_turns == 2) {
+            alert(`${mon.name} woke up!`)
+            mon.status = null
+            rerenderAllyName()
+            rerenderCPUName()
+            return false
+        }
+        else if (mon.sleep_turns == 0) {
+            alert(`${mon.name} is asleep!`)
+            mon.sleep_turns++
+            rerenderAllyName()
+            rerenderCPUName()
+            return true
+        }
+        else {
+            if(Math.random() < 0.33) {
+                alert(`${mon.name} woke up!`)
+                mon.status = null
+                rerenderAllyName()
+                rerenderCPUName()
+                return false
+            }
+            else{
+                alert(`${mon.name} is asleep!`)
+                mon.sleep_turns++
+                rerenderAllyName()
+                rerenderCPUName()
+                return true
+            }
+        }
+    }
+}
+
 function executeMove(move, attackingMon, defendingMon) {
     alert(`${attackingMon.name} used ${move.name}`)
     let damage_roll_multiplier = 1 + (Math.random()/10) - 0.05
@@ -484,6 +533,13 @@ function executeMove(move, attackingMon, defendingMon) {
     if (attackingMon.status == 'paralysis'){
         if(Math.random() < 0.25){
             alert(`${attackingMon} is paralyzed and can't move`)
+            move.pp++
+            return
+        }
+    }
+    else if (attackingMon.status == 'sleep'){
+        if(checkSleep(attackingMon)){
+            move.pp++
             return
         }
     }
@@ -505,6 +561,14 @@ function executeMove(move, attackingMon, defendingMon) {
         base_power *= ((attackingMon.atk * attackingMon.atk_mult) / (defendingMon.sp_def * defendingMon.sp_def_mult))
     }
 
+    // Accuracy Check
+    if (attackingMon.accuracy != null){
+        if ((Math.random() * attackingMon.accuracy_mult) > ((move.accuracy/100) * defendingMon.evasiveness_mult) && move.damage_class != 'status' && move.name != 'struggle') {
+            alert(`${attackingMon.name}'s attack missed!`)
+            return
+        }
+    }
+
     // stat changing moves
     if (move.damage_class == 'status' &&  move.stat_changes.length > 0) {
         // opponent, selected-pokemon, all-pokemon, user, ally
@@ -523,12 +587,25 @@ function executeMove(move, attackingMon, defendingMon) {
     else if (move.damage_class == 'status' && move.meta.ailment.name == 'paralysis'){
         inflictParalysis(defendingMon)
     }
+    else if (move.damage_class == 'status' && move.meta.ailment.name == 'sleep'){
+        if(defendingMon.status == null) {
+            inflictSleep(defendingMon)
+        }
+        else {
+            alert(`${move.name} failed!`)
+        }
+    }
+    else if (move.damage_class == 'status' && move.name == 'rest'){
+        inflictSleep(attackingMon)
+        attackingMon.hp = attackingMon.max_hp
+        renderAllyHp()
+        renderCPUHp()
+    }
+    else if (attackingMon.sleep_turns == -1){
+        inflictSleep(attackingMon)
+    }
     // TODO implement status moves
 
-    if ((Math.random() * attackingMon.accuracy_mult) > ((move.accuracy/100) * defendingMon.evasiveness_mult) && move.damage_class != 'status' && move.name != 'struggle') {
-        alert(`${attackingMon.name}'s attack missed!`)
-        return
-    }
 
     let damage = Math.round((base_power * damage_roll_multiplier)/3)
     defendingMon.hp -= damage
@@ -562,18 +639,36 @@ function executeMove(move, attackingMon, defendingMon) {
             applyStatChange(move.stat_changes, defendingMon)
         }
     }
-    else if (Math.random() < move.meta.ailment_chance/100) {
-        if(move.meta.ailment.name == 'paralysis'){
-            if(move.target.includes('opponent') || move.target.includes('selected-pokemon')){
-                inflictParalysis(defendingMon)
+    else if(move.meta != null){
+        if (Math.random() < move.meta.ailment_chance/100) {
+            if(move.meta.ailment.name == 'paralysis'){
+                if(move.target.includes('opponent') || move.target.includes('selected-pokemon')){
+                    inflictParalysis(defendingMon)
+                }
+                else if(move.target.includes('user') || move.target.includes('ally')){
+                    inflictParalysis(attackingMon)
+                }
+                else if(move.target.includes('all-pokemon')){
+                    inflictParalysis(defendingMon)
+                    inflictParalysis(attackingMon)
+                }
             }
-            else if(move.target.includes('user') || move.target.includes('ally')){
-                inflictParalysis(attackingMon)
+            else if (move.meta.ailment.name == 'sleep'){
+                if(move.target.includes('opponent') || move.target.includes('selected-pokemon')){
+                    inflictSleep(defendingMon)
+                }
+                else if(move.target.includes('user') || move.target.includes('ally')){
+                    inflictSleep(attackingMon)
+                }
+                else if(move.target.includes('all-pokemon')){
+                    inflictSleep(defendingMon)
+                    inflictSleep(attackingMon)
+                }
             }
-            else if(move.target.includes('all-pokemon')){
-                inflictParalysis(defendingMon)
-                inflictParalysis(attackingMon)
-            }
+        }
+        else if (move.meta.ailment.name == 'yawn'){
+            alert(`${defendingMon.name} grew drowsy`)
+            defendingMon.sleep_turns = -1
         }
     }
 }

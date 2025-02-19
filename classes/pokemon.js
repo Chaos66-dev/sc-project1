@@ -1,5 +1,7 @@
 import Move from '../classes/move.js'
 
+// let rest = new Move()
+
 class Pokemon {
     constructor(info) {
         this.name = info.name;
@@ -18,6 +20,7 @@ class Pokemon {
         this.accuracy_mult = 1
         this.evasiveness_mult = 1
         this.status = null
+        this.turns_slept = 0
         this.types = info.types.filter(typ => typ.type.name)
         this.back_default_sprite = info.sprites.back_default
         this.front_default_sprite = info.sprites.front_default
@@ -56,7 +59,20 @@ class Pokemon {
     async selectMoves(blacklist) {
         let selected_idxs = []
         let selected_moves = []
+        // let tmp = false // testing only
         while (selected_moves.length < 4){
+            // testing only
+            // const sleepMove = this.possible_moves.find(move => move.name === "yawn");
+            // if(sleepMove != undefined && !tmp){
+            //     let response = await fetch(sleepMove.url)
+            //     let data = await response.json()
+            //     selected_moves.push(new Move(data))
+            //     tmp = true
+            //     continue
+            // }
+            // testing only
+
+
             let rand_mv = Math.floor(Math.random() * this.possible_moves.length)
             if (selected_idxs.includes(rand_mv)) {
                 continue
