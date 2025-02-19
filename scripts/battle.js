@@ -11,7 +11,6 @@ const moveBlacklist =[
     'hail',
     'heal-pulse',
     'protect',
-    // 'rest',
     'flash',
     'magic-coat',
     'snore',
@@ -34,7 +33,6 @@ const moveBlacklist =[
     'confuse-ray',
     'taunt',
     'poison-powder',
-    // 'sleep-powder',
     'attract',
     'will-o-wisp',
     'ally-swtich',
@@ -81,10 +79,17 @@ const moveBlacklist =[
     'laser-focus',
     'grassy-terrain',
     'synthesis',
-    // 'yawn', // maybe
     'secret-power',
     'teleport',
-    'endeavor'
+    'endeavor',
+    'moonlight',
+    'toxic-spikes',
+    'stealth-rock',
+    'dragon-cheer',
+    'psychic-terrain',
+    'poison-gas',
+    'return',
+    'reversal'
 ]
 const struggle = fetch('https://pokeapi.co/api/v2/move/struggle')
                     .then(response => response.json())
@@ -415,31 +420,31 @@ function applyStatChange(stat_changes, mon) {
     for (let effect of stat_changes) {
         switch (effect.stat.name) {
             case 'attack':
-                mon.atk_mult += 0.2 * effect.change
+                mon.atk_mult += 0.4 * effect.change
                 changes.push({'attack': effect.change})
                 break;
             case 'defense':
-                mon.def_mult += 0.2 * effect.change
+                mon.def_mult += 0.4 * effect.change
                 changes.push({'defense': effect.change})
                 break;
             case 'special-attack':
-                mon.sp_atk_mult += 0.2 * effect.change
+                mon.sp_atk_mult += 0.4 * effect.change
                 changes.push({'special-attack': effect.change})
                 break;
             case 'special-defense':
-                mon.sp_def_mult += 0.2 * effect.change
+                mon.sp_def_mult += 0.4 * effect.change
                 changes.push({'special-defense': effect.change})
                 break;
             case 'speed':
-                mon.speed_mult += 0.2 * effect.change
+                mon.speed_mult += 0.4 * effect.change
                 changes.push({'speed': effect.change})
                 break;
             case 'accuracy':
-                mon.accuracy_mult += 0.2 * effect.change
+                mon.accuracy_mult += 0.4 * effect.change
                 changes.push({'accuracy': effect.change})
                 break;
             case 'evasion':
-                mon.evasiveness_mult_mul += 0.2 * effect.change
+                mon.evasiveness_mult_mul += 0.4 * effect.change
                 changes.push({'evassiveness': effect.change})
                 break;
             default:
@@ -472,7 +477,7 @@ function applyStatChange(stat_changes, mon) {
 
 function inflictParalysis(mon) {
     mon.status = 'paralysis'
-    mon.speed_mult -= 0.5
+    mon.speed_mult /= 2
     alert(`${mon.name} was paralyzed`)
     rerenderAllyName()
     rerenderCPUName()
@@ -603,6 +608,12 @@ function executeMove(move, attackingMon, defendingMon) {
     }
     else if (attackingMon.sleep_turns == -1){
         inflictSleep(attackingMon)
+        return
+    }
+    else if (move.damage_class == 'status' && move.name == 'roost'){
+        attackingMon.hp = Math.min(attackingMon.hp + Math.round(attackingMon.max_hp/2), attackingMon.max_hp)
+        renderAllyHp()
+        renderCPUHp()
     }
     // TODO implement status moves
 
