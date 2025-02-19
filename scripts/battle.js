@@ -95,7 +95,17 @@ const moveBlacklist =[
     'nature-power',
     'trick-room',
     'low-kick',
-    'block'
+    'block',
+    'natrual-gift',
+    'snowscape',
+    'heavy-slam',
+    'baton-pass',
+    'sheer-cold',
+    'bide',
+    'psywave',
+    'metronome',
+    'trick',
+    'assist'
 ]
 const struggle = fetch('https://pokeapi.co/api/v2/move/struggle')
                     .then(response => response.json())
@@ -409,10 +419,10 @@ function effectivenessCheck(move_type, defendingMonTypes) {
     let effectiveness = 1
     for(let mon_type of defendingMonTypes) {
         if(superEffective[move_type].includes(mon_type)){
-            effectiveness *= 2
+            effectiveness *= 1.75
         }
         if(notVeryEffective[move_type].includes(mon_type)){
-            effectiveness /= 2
+            effectiveness /= 1.75
         }
         if(noEffect[move_type].includes(mon_type)) {
             effectiveness = 0

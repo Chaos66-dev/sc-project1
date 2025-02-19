@@ -59,17 +59,17 @@ class Pokemon {
     async selectMoves(blacklist) {
         let selected_idxs = []
         let selected_moves = []
-        let tmp = false // testing only
+        // let tmp = false // testing only
         while (selected_moves.length < 4){
             // testing only
-            const sleepMove = this.possible_moves.find(move => move.name === "take-down");
-            if(sleepMove != undefined && !tmp){
-                let response = await fetch(sleepMove.url)
-                let data = await response.json()
-                selected_moves.push(new Move(data))
-                tmp = true
-                continue
-            }
+            // const sleepMove = this.possible_moves.find(move => move.name === "take-down");
+            // if(sleepMove != undefined && !tmp){
+            //     let response = await fetch(sleepMove.url)
+            //     let data = await response.json()
+            //     selected_moves.push(new Move(data))
+            //     tmp = true
+            //     continue
+            // }
             // testing only
 
 
